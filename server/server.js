@@ -1,26 +1,28 @@
-import express from "express"
+import express from "express";
 import "dotenv/config.js";
 import cors from "cors";
 import connectDB from "./configs/db.js";
-import { clerkMiddleware } from '@clerk/express'
+import { clerkMiddleware } from "@clerk/express";
 import clerkWebhooks from "./controllers/clerkWebhooks.js";
 
+connectDB();
 
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(clerkMiddleware());
 
-connectDB()
+// Clerk webhook route
+app.use("/api/clerk", clerkWebhooks);
 
-const app = express()
-app.use(cors())
+// Test route
+app.get("/", (req, res) => res.send("API IS WORKING"));
 
-// middleware
-app.use(express.json())
-app.use(clerkMiddleware())
+// ✅ Export app (for Vercel serverless)
+export default app;
 
-//api to listen to clerk webhooks
-app.use('/api/clerk', clerkWebhooks)
-
-app.get('/', (req, res)=> res.send("API IS WORKING"))
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, ()=> console.log(`Server running on port ${PORT}`));
+// ✅ Run the server only when not in Vercel environment
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
