@@ -13,7 +13,7 @@ import AddRoom from "./pages/hotelOwner/AddRoom";
 import Dashboard from "./pages/hotelOwner/Dashboard";
 
 const App = () => {
-  const isOwnerPath = useLocation().pathname.includes("owner"); // Check if the current path includes "owner"
+  const isOwnerPath = useLocation().pathname.includes("owner");
   return (
     <div>
       {!isOwnerPath && <Navbar /> } 
