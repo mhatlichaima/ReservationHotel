@@ -9,19 +9,19 @@ connectDB();
 
 const app = express();
 app.use(cors());
+
+// ✅ Clerk webhook must come BEFORE express.json()
+app.post("/api/clerk", express.raw({ type: "application/json" }), clerkWebhooks);
+
+// ✅ Then parse JSON for all other routes
 app.use(express.json());
 app.use(clerkMiddleware());
-
-// Clerk webhook route
-app.use("/api/clerk", clerkWebhooks);
 
 // Test route
 app.get("/", (req, res) => res.send("API IS WORKING"));
 
-// ✅ Export app (for Vercel serverless)
 export default app;
 
-// ✅ Run the server only when not in Vercel environment
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
