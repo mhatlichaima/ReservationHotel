@@ -10,19 +10,15 @@ connectDB();
 const app = express();
 app.use(cors());
 
-// ✅ Clerk webhook must come BEFORE express.json()
-app.post("/api/clerk", express.raw({ type: "application/json" }), clerkWebhooks);
-
-// ✅ Then parse JSON for all other routes
+// middleware
 app.use(express.json());
 app.use(clerkMiddleware());
 
-// Test route
+// api to listen to clerk webhooks
+app.use("/api/clerk", clerkWebhooks);
+
 app.get("/", (req, res) => res.send("API IS WORKING"));
 
-export default app;
+const PORT = process.env.PORT || 3000;
 
-if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

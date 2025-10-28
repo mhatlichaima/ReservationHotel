@@ -1,73 +1,53 @@
+// controllers/clerkWebhooks.js
 import User from "../models/user.model.js";
 import { Webhook } from "svix";
 
 const clerkWebhooks = async (req, res) => {
   try {
-    console.log("🔔 Clerk webhook called");
+    // create a svix instance with clerk webhook secret
+    const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
 
-    // ✅ 1. Verify required headers
+    // getting headers
     const headers = {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
       "svix-signature": req.headers["svix-signature"],
     };
+    // verifing headers
+    await whook.verify(JSON.stringify(req.body), headers)
 
-    if (!headers["svix-id"] || !headers["svix-timestamp"] || !headers["svix-signature"]) {
-      console.error("❌ Missing Svix headers");
-      return res.status(400).json({ success: false, message: "Missing Svix headers" });
-    }
+    //getting data from req body
+    const {data, type} = req.body
 
-    // ✅ 2. Verify signature with raw body (important for Vercel)
-    const payload = req.body?.toString("utf8") || "";
-    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
-
-    let evt;
-    try {
-      evt = wh.verify(payload, headers);
-    } catch (err) {
-      console.error("❌ Invalid Clerk webhook signature:", err.message);
-      return res.status(400).json({ success: false, message: "Invalid signature" });
-    }
-
-    // ✅ 3. Parse event safely
-    const { data, type } = JSON.parse(payload);
-    console.log("📩 Event type:", type);
-
-    // ✅ 4. Build user data object
     const userData = {
       _id: data.id,
-      email: data.email_addresses?.[0]?.email_address || "no-email",
-      username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+      email: data.email_addresses[0].email_address,
+      username: data.first_name + " " + data.last_name,
       image: data.image_url,
-      role: "user",
-      recentSearchedCities: [],
     };
 
-    // ✅ 5. Handle different event types
+    // switch cases for different events
     switch (type) {
-      case "user.created":
-        console.log("🧠 Creating user:", userData.email);
+      case "user.created":{
         await User.create(userData);
-        console.log("✅ User created successfully");
         break;
+      }
 
-      case "user.updated":
-        console.log("🔄 Updating user:", userData.email);
+      case "user.updated":{
         await User.findByIdAndUpdate(data.id, userData);
         break;
+      }
 
-      case "user.deleted":
-        console.log("🗑️ Deleting user:", data.id);
+      case "user.deleted":{
         await User.findByIdAndDelete(data.id);
         break;
-
+      }
+      
       default:
-        console.log("ℹ️ Unhandled event type:", type);
         break;
     }
-
-    // ✅ Respond success
-    res.status(200).json({ success: true });
+    res.JSON({success: true, message: "webhook recieved"})
+    
   } catch (error) {
     console.error("❌ Clerk webhook error:", error.message);
     res.status(500).json({ success: false, message: error.message });
