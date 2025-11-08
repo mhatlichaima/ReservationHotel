@@ -1,13 +1,21 @@
+// middleware/authMiddleware.js
+import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
-//middleware to check if user is authenticated
-export const protect = async (req, res, next)=>{
-    const {userId} = req.auth;
-    if(!userId){
-        res.json({success: false, message: "not authenticated"})
-    }else{
-        const user = await User.findById(userId);
-        req.user = user;
-        next()
+export const protect = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, message: "Not authorized, no token" });
     }
-}
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = await User.findById(decoded.userId).select("-password");
+    next();
+  } catch (error) {
+    res.status(401).json({ success: false, message: "Invalid or expired token" });
+  }
+};
