@@ -198,7 +198,7 @@ export const getHotelBookings = async (req, res) => {
   }
 }
 
-/*
+
 export const stripePayment = async (req, res)=>{
   try{
     const { bookingId } =req.body;
@@ -209,4 +209,4 @@ export const stripePayment = async (req, res)=>{
   }catch(error){
 
   }
-}*/
+}
