@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&display=swap');
-
 @import "tailwindcss";
 
 :root {
@@ -7,15 +6,15 @@
   --color-secondary: #FBBF24;
 }
 
-*{
+* {
   font-family: Outfit;
 }
-.font-playfair{
-  font-family: Plauyfair !important;
+
+.font-playfair {
+  font-family: Playfair !important; /* Correction: Playfair au lieu de Plauyfair */
 }
 
-
-/* Dans votre index.css */
+/* Animations */
 @keyframes fade-in-up {
   from {
     opacity: 0;
