@@ -9,7 +9,7 @@ import {
 import { 
   TrendingUp, Users, DollarSign, Hotel, Calendar, 
   Download, Filter, RefreshCw, Eye, Edit3, Search,
-  ChevronDown, X
+  ChevronDown, X, Plus, Building
 } from 'lucide-react'
 
 // Palettes de couleurs modernes
@@ -322,7 +322,6 @@ const ModernBookingsTable = ({ bookings, onAction, onExport }) => {
               <Download size={16} />
               Export CSV
             </button>
-           
           </div>
         </div>
       </div>
@@ -431,7 +430,7 @@ const ModernBookingsTable = ({ bookings, onAction, onExport }) => {
 
 // Dashboard Principal COMPLETEMENT FONCTIONNEL
 const Dashboard = () => {
-  const { currency, user, getToken, toast, axios } = useAppContext();
+  const { currency, user, getToken, toast, axios, setShowHotelReg } = useAppContext();
   const [dashboardData, setDashboardData] = useState({
     totalBookings: 0,
     totalRevenue: 0,
@@ -626,6 +625,11 @@ const Dashboard = () => {
     }
   };
 
+  // FONCTION POUR AJOUTER UN HÔTEL
+  const handleAddHotel = () => {
+    setShowHotelReg(true);
+  };
+
   useEffect(() => {
     if (user) {
       fetchDashboardData();
@@ -661,6 +665,15 @@ const Dashboard = () => {
             <p className="text-gray-600 mt-2">Real-time insights and performance metrics</p>
           </div>
           <div className="flex gap-3">
+            {/* BOUTON ADD HOTEL */}
+            <button
+              onClick={handleAddHotel}
+              className="flex items-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-all font-medium shadow-sm"
+            >
+              <Plus size={18} />
+              Add Hotel
+            </button>
+            
             <button
               onClick={fetchDashboardData}
               className="flex items-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-medium shadow-sm"
@@ -672,7 +685,15 @@ const Dashboard = () => {
         </div>
 
         {/* Main Metrics */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <MetricCard
+            title="Total Hotels"
+            value={user?.hotels?.length?.toString() || '0'}
+            subtitle="Registered properties"
+            icon={Building}
+            color="bg-indigo-500"
+            trend={user?.hotels?.length > 0 ? 5 : 0}
+          />
           <MetricCard
             title="Total Bookings"
             value={dashboardData.totalBookings?.toLocaleString() || '0'}

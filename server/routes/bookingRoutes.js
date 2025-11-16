@@ -1,39 +1,34 @@
-// routes/bookingRoutes.js - CORRECTION COMPLÈTE
+// routes/bookingRoutes.js - VERSION COMPLÈTE
 import express from "express";
 import { 
   checkAvailabilityApi, 
   createBooking, 
   getUserBookings, 
-  getHotelBookings 
+  getHotelBookings, 
+  stripePayment,
+  checkPaymentStatus,
+  forceCheckPayment,
+  verifyPaymentAfterReturn,
+  checkPaymentBySession,
+  stripeWebhooks,
+  debugBooking
 } from "../controllers/bookingController.js";
 import { protect } from "../middleware/authMiddleware.js";
-import Hotel from "../models/hotel.model.js"; // AJOUTEZ CET IMPORT
-import Booking from "../models/booking.model.js"; // AJOUTEZ CET IMPORT
 
 const bookingRouter = express.Router();
 
+// Routes publiques
 bookingRouter.post('/check-availability', checkAvailabilityApi);
+
+// Routes protégées
 bookingRouter.post('/book', protect, createBooking);
 bookingRouter.get('/user', protect, getUserBookings);
 bookingRouter.get('/hotel', protect, getHotelBookings);
+bookingRouter.post('/stripe-payment', protect, stripePayment);
+bookingRouter.get('/:bookingId/payment-status', protect, checkPaymentStatus);
+bookingRouter.post('/force-check-payment', protect, forceCheckPayment);
+bookingRouter.post('/verify-payment-return', protect, verifyPaymentAfterReturn);
+bookingRouter.post('/check-payment-by-session', protect, checkPaymentBySession);
+bookingRouter.get('/debug/:bookingId', protect, debugBooking);
 
-// Route de debug
-bookingRouter.get('/debug-dashboard', protect, async (req, res) => {
-  try {
-    console.log("=== DASHBOARD DEBUG ===");
-    const hotels = await Hotel.find({ owner: req.user._id });
-    
-    res.json({
-      success: true,
-      user: req.user,
-      hotels: hotels,
-      bookingsCount: hotels.length > 0 ? 
-        await Booking.countDocuments({ hotel: { $in: hotels.map(h => h._id) } }) : 0
-    });
-  } catch (error) {
-    res.json({ success: false, error: error.message });
-  }
-});
-
-// 🔥 CORRECTION : Export default pour rester cohérent
 export default bookingRouter;
